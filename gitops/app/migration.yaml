@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: database-migrate
+  namespace: azurelab
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: database-migrate
+        azure.workload.identity/use: 'true'
+    spec:
+      serviceAccountName: backend
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+      volumes:
+      - name: secrets
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: backend-keyvault
+      containers:
+      - name: migrate
+        image: acrazurelabb436d920.azurecr.io/azurelab-backend:0c0b974d92d4
+        command:
+        - alembic
+        - upgrade
+        - head
+        env:
+        - name: APP_ENV
+          value: azure
+        - name: DATABASE_URL_FILE
+          value: /mnt/secrets-store/database-url
+        - name: AZURE_STORAGE_ACCOUNT_URL
+          value: https://stazurelabb436d920.blob.core.windows.net
+        - name: AZURE_STORAGE_CONTAINER
+          value: product-images
+        volumeMounts:
+        - name: secrets
+          mountPath: /mnt/secrets-store
+          readOnly: true
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
