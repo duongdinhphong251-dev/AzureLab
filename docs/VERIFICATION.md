@@ -14,7 +14,7 @@ PASS: upload/download and invalid-image rejection
 PASS: delete
 ```
 
-Trang `/`, `/styles.css` và `/app.js` đều trả HTTP 200 với Content-Type phù hợp. Kiểm tra tự động này không thay thế việc duyệt giao diện thủ công trên Azure; công cụ browser trong phiên bàn giao không khởi tạo được. Giao diện cùng image đã được kiểm tra thêm/sửa ở phiên local trước.
+Trang `/`, `/styles.css` và `/app.js` đều trả HTTP 200 với Content-Type phù hợp. Các thao tác thêm/sửa trên giao diện đã được kiểm tra ở môi trường local; trên Azure đã thực hiện kiểm thử HTTP và API, chưa kiểm thử giao diện thủ công.
 
 Smoke test tạo dữ liệu riêng rồi xóa dữ liệu test. Dữ liệu sản phẩm lưu ở PostgreSQL Flexible Server thật; file ảnh lưu ở Azure Blob thật, không dùng Azurite trong AKS.
 
