@@ -66,7 +66,8 @@ resource "azurerm_application_gateway" "main" {
     ignore_changes = [
       backend_address_pool, backend_http_settings, http_listener,
       request_routing_rule, url_path_map, probe, redirect_configuration,
-      frontend_port, ssl_certificate
+      frontend_port, ssl_certificate,
+      tags["ingress-for-aks-cluster-id"], tags["managed-by-k8s-ingress"]
     ]
   }
 }

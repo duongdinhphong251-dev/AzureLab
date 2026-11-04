@@ -22,6 +22,8 @@ CRUD quản lý sản phẩm với frontend HTML/CSS/JavaScript và backend Fast
 
 ## Kiểm thử
 
+Kết quả nghiệm thu Azure: [docs/VERIFICATION.md](docs/VERIFICATION.md). ArgoCD đã Synced/Healthy; CRUD và ảnh đã kiểm thử thành công qua Application Gateway.
+
 Smoke test có trong `app/scripts/smoke_test.py`, kiểm tra health/readiness, CRUD, tìm kiếm, stale update, upload/download và từ chối file giả. Dữ liệu kiểm thử được tạo rồi xóa bởi script.
 
 ```powershell

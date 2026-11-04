@@ -3,6 +3,7 @@ resource "azurerm_postgresql_flexible_server" "main" {
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
 
+  zone     = "1"
   version  = "17"
   sku_name = "B_Standard_B1ms"
 
