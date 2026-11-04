@@ -1,0 +1,73 @@
+name: azurelab-app
+
+x-backend: &backend
+  build: ./backend
+  environment: &backend-env
+    APP_ENV: local
+    DATABASE_URL: postgresql+psycopg://azurelab:${POSTGRES_PASSWORD:-local-demo-only}@db:5432/azurelab
+    AZURITE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=azurelab;AccountKey=${AZURITE_KEY:-YXp1cmVsYWItbG9jYWwtZW11bGF0b3Ita2V5LW9ubHk=};BlobEndpoint=http://azurite:10000/azurelab;
+    AZURE_STORAGE_CONTAINER: product-images
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: azurelab
+      POSTGRES_USER: azurelab
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-demo-only}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U azurelab -d azurelab"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.35.0
+    command: azurite-blob --blobHost 0.0.0.0 --loose --skipApiVersionCheck --location /data
+    environment:
+      AZURITE_ACCOUNTS: azurelab:${AZURITE_KEY:-YXp1cmVsYWItbG9jYWwtZW11bGF0b3Ita2V5LW9ubHk=}
+    volumes:
+      - blob-data:/data
+    restart: unless-stopped
+
+  migrate:
+    <<: *backend
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    <<: *backend
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      azurite:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/ready', timeout=10)"]
+      interval: 10s
+      timeout: 12s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    environment:
+      BACKEND_HOST: backend
+      BACKEND_PORT: "8080"
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  blob-data:

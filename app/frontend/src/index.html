@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AzureLab — Quản lý sản phẩm</title>
+  <meta name="description" content="Quản lý sản phẩm, tồn kho và hình ảnh trong AzureLab.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css"><script src="app.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="AzureLab trang chủ"><span class="brand-mark">a<span>↗</span></span><span>azurelab<span class="brand-caption">PRODUCT WORKSPACE</span></span></a>
+    <span class="nav-label">KHÔNG GIAN LÀM VIỆC</span>
+    <a class="nav-item selected" href="/" aria-current="page"><span>▦</span> Sản phẩm <span class="nav-count" id="nav-count">—</span></a>
+    <div class="sidebar-note"><span class="note-icon">◇</span><strong>Mọi sản phẩm,<br>một nơi quản lý.</strong><p>Thông tin gọn gàng.<br>Hình ảnh luôn sẵn sàng.</p></div>
+    <div class="sidebar-bottom"><span class="avatar">AL</span><div><strong>AzureLab</strong><span>Không gian demo</span></div><span class="little-dot"></span></div>
+  </aside>
+  <main>
+    <header class="topbar"><span>Không gian làm việc <span class="slash">/</span> <strong>Sản phẩm</strong></span><span id="connection" class="connection"><i></i><span>Đang kết nối</span></span></header>
+    <div class="page">
+      <div class="heading"><div><p class="eyebrow">DANH MỤC CỦA BẠN</p><h1>Sản phẩm<span>.</span></h1><p class="subtitle">Quản lý thông tin, tồn kho và hình ảnh trong cùng một nơi.</p></div><button class="button primary" id="add-product"><span class="plus">＋</span> Thêm sản phẩm</button></div>
+      <section class="stats" aria-label="Thống kê toàn bộ danh mục">
+        <article class="stat"><div><span>Tổng sản phẩm</span><span class="stat-icon">▦</span></div><strong id="stat-products">—</strong><small>Trong danh mục của bạn</small></article>
+        <article class="stat"><div><span>Tổng tồn kho</span><span class="stat-icon">▣</span></div><strong id="stat-units">—</strong><small>Đơn vị sản phẩm</small></article>
+        <article class="stat"><div><span>Giá trị tồn kho</span><span class="stat-icon">₫</span></div><strong class="money-stat" id="stat-value">—</strong><small>Tính theo giá bán · VND</small></article>
+        <article class="stat accent"><div><span>Cần bổ sung</span><span class="stat-icon">↘</span></div><strong id="stat-low">—</strong><small>Sản phẩm có tồn kho ≤ 5</small></article>
+      </section>
+      <section class="catalog" aria-label="Danh sách sản phẩm">
+        <div class="catalog-head"><div><h2>Danh sách sản phẩm <span id="result-count">0</span></h2><p>Những chi tiết nhỏ, được quản lý thật rõ ràng.</p></div><button class="button subtle" id="refresh" aria-label="Làm mới danh sách">↻ <span>Làm mới</span></button></div>
+        <div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input type="search" id="search" placeholder="Tìm theo tên hoặc danh mục…" maxlength="120" aria-label="Tìm sản phẩm"></label><label class="filter"><span>Tồn kho</span><select id="stock-filter" aria-label="Lọc tồn kho"><option value="all">Tất cả trạng thái</option><option value="available">Còn hàng</option><option value="low">Sắp hết hàng</option><option value="empty">Hết hàng</option></select></label></div>
+        <div id="load-error" class="error-box" role="alert" hidden><strong>Không tải được danh mục.</strong><span id="load-error-text"></span><button class="button" id="retry">Thử lại</button></div>
+        <div id="loading" class="loading" role="status"><span class="spinner"></span> Đang tải sản phẩm…</div>
+        <div id="empty" class="empty" hidden><div class="empty-icon">▦</div><h3 id="empty-title">Danh mục đang chờ sản phẩm đầu tiên</h3><p id="empty-description">Thêm tên, giá và một bức ảnh. Bắt đầu từ những điều đơn giản.</p><button class="button primary" id="empty-add">＋ Thêm sản phẩm</button></div>
+        <div class="table-scroll" id="table-wrap" hidden><table><thead><tr><th>SẢN PHẨM</th><th>DANH MỤC</th><th>GIÁ BÁN</th><th>TỒN KHO</th><th>TRẠNG THÁI</th><th><span class="sr-only">Thao tác</span></th></tr></thead><tbody id="products"></tbody></table></div>
+        <div class="pagination"><span id="page-label">Chưa có sản phẩm</span><div><button class="page-button" id="previous" aria-label="Trang trước" disabled>←</button><span id="page-number">01</span><button class="page-button" id="next" aria-label="Trang sau" disabled>→</button></div></div>
+      </section>
+      <footer class="footer"><span><span class="footer-dot"></span> AzureLab · Product workspace</span><span>Được tạo để bạn quản lý dễ dàng hơn.</span></footer>
+    </div>
+  </main>
+
+  <dialog id="product-dialog" aria-labelledby="dialog-title">
+    <form id="product-form"><div class="dialog-heading"><div><p class="eyebrow">DANH MỤC SẢN PHẨM</p><h2 id="dialog-title">Thêm sản phẩm</h2></div><button type="button" class="icon-button close-dialog" aria-label="Đóng">✕</button></div>
+      <div class="form-body"><div class="image-field"><div class="image-preview" id="image-preview"><span>▧</span></div><div><strong>Ảnh sản phẩm</strong><p>JPG, PNG hoặc WebP · Tối đa 5 MB</p><label class="button upload-label" for="product-image">Chọn ảnh</label><input type="file" id="product-image" accept="image/jpeg,image/png,image/webp"><span id="file-name" class="file-name"></span><button type="button" class="text-button" id="remove-image" hidden>Xóa ảnh hiện tại</button></div></div>
+      <label class="field">Tên sản phẩm <span class="required">*</span><input id="product-name" name="name" required maxlength="120" placeholder="Ví dụ: Bàn phím cơ không dây"></label>
+      <label class="field">Danh mục <span class="required">*</span><input id="product-category" name="category" required maxlength="60" list="categories" placeholder="Ví dụ: Phụ kiện"><datalist id="categories"><option value="Phụ kiện"><option value="Văn phòng"><option value="Gia dụng"><option value="Thời trang"><option value="Khác"></datalist></label>
+      <div class="form-grid"><label class="field">Giá bán (VND) <span class="required">*</span><input id="product-price" name="price" type="number" min="0" max="9999999999.99" step="0.01" required placeholder="0"></label><label class="field">Số lượng <span class="required">*</span><input id="product-stock" name="stock" type="number" min="0" max="1000000" step="1" required placeholder="0"></label></div>
+      <label class="field">Mô tả<textarea id="product-description" name="description" maxlength="2000" rows="3" placeholder="Một vài chi tiết về sản phẩm…"></textarea></label>
+      <p class="form-error" id="form-error" role="alert" hidden></p></div>
+      <div class="dialog-footer"><button type="button" class="button close-dialog">Hủy</button><button class="button primary" id="save-product" type="submit">Lưu sản phẩm</button></div>
+    </form>
+  </dialog>
+  <dialog id="delete-dialog" class="small-dialog" aria-labelledby="delete-title"><div class="dialog-heading"><h2 id="delete-title">Xóa sản phẩm?</h2><button class="icon-button" id="delete-close" aria-label="Đóng">✕</button></div><div class="form-body"><p id="delete-message"></p><p class="muted">Thông tin và ảnh liên quan sẽ được xóa. Thao tác này không thể hoàn tác.</p><p class="form-error" id="delete-error" role="alert" hidden></p></div><div class="dialog-footer"><button class="button" id="delete-cancel">Giữ lại</button><button class="button danger" id="delete-confirm">Xóa sản phẩm</button></div></dialog>
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>
